@@ -5,6 +5,9 @@ import androidx.room.Room
 import com.d4m0n1.managerone.data.local.AppDatabase
 import com.d4m0n1.managerone.data.repository.PasswordRepositoryImpl
 import com.d4m0n1.managerone.domain.repository.PasswordRepository
+import com.d4m0n1.managerone.domain.usecase.DeletePasswordUseCase
+import com.d4m0n1.managerone.domain.usecase.GetPasswordByIdUseCase
+import com.d4m0n1.managerone.domain.usecase.UpdatePasswordUseCase
 import com.d4m0n1.managerone.ui.viewmodel.AddPasswordViewModel
 import com.d4m0n1.managerone.ui.viewmodel.PasswordListViewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -26,6 +29,11 @@ val appModule = module {
 
     // Repository
     single<PasswordRepository> { PasswordRepositoryImpl(get()) }
+
+    // Use Cases
+    factory { GetPasswordByIdUseCase(get()) }
+    factory { UpdatePasswordUseCase(get()) }
+    factory { DeletePasswordUseCase(get()) }
 
     // ViewModels
     viewModelOf(::PasswordListViewModel)

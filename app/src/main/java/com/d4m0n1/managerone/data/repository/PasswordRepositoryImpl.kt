@@ -19,8 +19,10 @@ class PasswordRepositoryImpl(
         dao.deleteById(id)
     }
 
+    override fun getPasswordById(id: Long): Flow<Password?> = dao.getPasswordById(id)
+
     // Добавим позже
-    suspend fun updatePassword(password: Password) {
+    override suspend fun updatePassword(password: Password) {
         dao.update(password)
     }
 }

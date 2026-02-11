@@ -94,9 +94,12 @@ fun PasswordListScreen(
                 ) {
                     items(
                         items = passwords,
-                        key = { it.id }   // важно для производительности и анимаций
+                        key = { it.id }
                     ) { password ->
-                        PasswordCard(password = password)
+                        PasswordCard(
+                            password = password,
+                            onClick = { navController.navigate("password_detail/${password.id}") }
+                        )
                     }
                 }
             }
@@ -105,8 +108,12 @@ fun PasswordListScreen(
 }
 
 @Composable
-private fun PasswordCard(password: Password) {
+private fun PasswordCard(
+    password: Password,
+    onClick: () -> Unit
+) {
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {

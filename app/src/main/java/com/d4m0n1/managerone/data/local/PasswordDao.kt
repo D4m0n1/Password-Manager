@@ -21,4 +21,7 @@ interface PasswordDao {
 
     @Query("DELETE FROM passwords WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("SELECT * FROM passwords WHERE id = :id LIMIT 1")
+    fun getPasswordById(id: Long): Flow<Password?>
 }
