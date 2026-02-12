@@ -77,5 +77,8 @@ dependencies {
     }
     ksp(libs.room.compiler)
 
-
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)   // или cio/android
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
 }
