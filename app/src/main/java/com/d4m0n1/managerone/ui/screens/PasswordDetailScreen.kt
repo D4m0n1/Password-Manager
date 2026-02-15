@@ -35,7 +35,7 @@ fun PasswordDetailScreen(
     getById: GetPasswordByIdUseCase = koinInject(),
     updateUseCase: UpdatePasswordUseCase = koinInject(),
     deleteUseCase: DeletePasswordUseCase = koinInject(),
-    checkPwnedUseCase: CheckPasswordPwnedUseCase = koinInject()   // ← добавили
+    checkPwnedUseCase: CheckPasswordPwnedUseCase = koinInject()
 ) {
     val scope = rememberCoroutineScope()
     var password by remember { mutableStateOf<Password?>(null) }
@@ -142,9 +142,21 @@ fun PasswordDetailScreen(
                 },
                 supportingText = {
                     when (pwnedResult) {
-                        is PwnedResult.Safe -> Text("Пароль выглядит безопасным", color = MaterialTheme.colorScheme.primary)
-                        is PwnedResult.Pwned -> Text("Пароль утёк ${(pwnedResult as PwnedResult.Pwned).count} раз!", color = MaterialTheme.colorScheme.error)
-                        is PwnedResult.Error -> Text((pwnedResult as PwnedResult.Error).message, color = MaterialTheme.colorScheme.error)
+                        is PwnedResult.Safe -> Text(
+                            "Пароль выглядит безопасным",
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        is PwnedResult.Pwned -> Text(
+                            "Пароль утёк ${(pwnedResult as PwnedResult.Pwned).count} раз!",
+                            color = MaterialTheme.colorScheme.error
+                        )
+
+                        is PwnedResult.Error -> Text(
+                            (pwnedResult as PwnedResult.Error).message,
+                            color = MaterialTheme.colorScheme.error
+                        )
+
                         null -> {}
                     }
                 },

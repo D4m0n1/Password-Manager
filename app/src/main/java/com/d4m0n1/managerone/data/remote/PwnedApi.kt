@@ -21,7 +21,6 @@ class PwnedApi(
             val responseText: String = client.get("$baseUrl/range/$prefix") {
                 header(HttpHeaders.UserAgent, "PasswordManager/1.0 (Android)")
                 header(HttpHeaders.Accept, ContentType.Text.Plain)
-                // Можно задать таймаут конкретно для этого запроса
                 timeout {
                     requestTimeoutMillis = 12000
                 }
@@ -39,7 +38,7 @@ class PwnedApi(
     }
 }
 
-// Extension для SHA-1 (добавь в utils или в тот же файл)
+// Extension для SHA-1
 fun String.toSHA1(): String {
     val bytes = MessageDigest.getInstance("SHA-1").digest(this.toByteArray())
     return bytes.joinToString("") { "%02x".format(it) }

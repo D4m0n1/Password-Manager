@@ -15,13 +15,14 @@ class CheckPasswordPwnedUseCase(
 
             when {
                 count == 0 -> PwnedResult.Safe
-                count > 0  -> PwnedResult.Pwned(count)
-                else       -> PwnedResult.Safe
+                count > 0 -> PwnedResult.Pwned(count)
+                else -> PwnedResult.Safe
             }
         } catch (e: Exception) {
             when {
                 e.message?.contains("timeout", ignoreCase = true) == true ->
                     PwnedResult.Error("Превышено время ожидания. Проверьте интернет.")
+
                 else ->
                     PwnedResult.Error("Ошибка сети: ${e.localizedMessage ?: "Неизвестная ошибка"}")
             }

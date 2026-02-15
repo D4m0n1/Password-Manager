@@ -21,11 +21,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,10 +36,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.d4m0n1.managerone.R
+import com.d4m0n1.managerone.data.datastore.SettingsDataStore
 import com.d4m0n1.managerone.domain.model.Password
 import com.d4m0n1.managerone.ui.navigation.ROUTE_ADD
 import com.d4m0n1.managerone.ui.viewmodel.PasswordListViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +53,8 @@ fun PasswordListScreen(
 ) {
     val passwords by viewModel.passwords.collectAsStateWithLifecycle()
 
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -54,7 +62,22 @@ fun PasswordListScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                ),
+                actions = {
+
+                    val settings: SettingsDataStore = koinInject()
+                    val isDark by settings.darkThemeFlow.collectAsStateWithLifecycle(initialValue = false)
+
+                    Switch(
+                        checked = isDark,
+                        onCheckedChange = { newValue ->
+                            scope.launch {
+                                settings.setDarkTheme(newValue)
+                            }
+                        }
+                    )
+
+                }
             )
         },
         floatingActionButton = {
@@ -143,7 +166,6 @@ private fun PasswordCard(
                     text = "••••••••",
                     style = MaterialTheme.typography.bodyLarge
                 )
-                // можно позже добавить иконку силы пароля или метку "утёк"
             }
         }
     }

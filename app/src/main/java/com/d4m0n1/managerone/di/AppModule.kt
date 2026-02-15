@@ -1,7 +1,12 @@
 package com.d4m0n1.managerone.di
 
 import android.app.Application
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
+import com.d4m0n1.managerone.data.datastore.SettingsDataStore
 import com.d4m0n1.managerone.data.local.AppDatabase
 import com.d4m0n1.managerone.data.remote.PwnedApi
 import com.d4m0n1.managerone.data.repository.PasswordRepositoryImpl
@@ -44,16 +49,24 @@ val appModule = module {
                 json()
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = 15000   // общий таймаут запроса (15 сек)
+                requestTimeoutMillis = 15000   // общий таймаут запроса
                 connectTimeoutMillis = 8000    // таймаут подключения
                 socketTimeoutMillis = 15000    // таймаут чтения данных
             }
         }
     }
     single<PwnedApi> { PwnedApi(get()) }
-    factory { CheckPasswordPwnedUseCase(get()) }
+
+    // Theme
+    single<DataStore<Preferences>> {
+        PreferenceDataStoreFactory.create {
+            get<Application>().applicationContext.preferencesDataStoreFile("settings")
+        }
+    }
+    single { SettingsDataStore(get()) }
 
     // Use Cases
+    factory { CheckPasswordPwnedUseCase(get()) } // <- этот для PwnedService
     factory { GetPasswordByIdUseCase(get()) }
     factory { UpdatePasswordUseCase(get()) }
     factory { DeletePasswordUseCase(get()) }

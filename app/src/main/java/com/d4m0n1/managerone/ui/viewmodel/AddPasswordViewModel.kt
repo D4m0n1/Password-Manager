@@ -15,4 +15,5 @@ class AddPasswordViewModel(
             repository.addPassword(password)
         }
     }
+
 }

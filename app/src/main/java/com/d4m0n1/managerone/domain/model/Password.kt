@@ -9,7 +9,7 @@ data class Password(
     val id: Long = 0,
     val serviceName: String,
     val login: String,
-    val password: String,           // в реальности будем шифровать
+    val password: String,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

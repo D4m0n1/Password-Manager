@@ -21,7 +21,6 @@ class PasswordRepositoryImpl(
 
     override fun getPasswordById(id: Long): Flow<Password?> = dao.getPasswordById(id)
 
-    // Добавим позже
     override suspend fun updatePassword(password: Password) {
         dao.update(password)
     }
