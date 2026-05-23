@@ -15,6 +15,7 @@ import com.d4m0n1.managerone.domain.usecase.CheckPasswordPwnedUseCase
 import com.d4m0n1.managerone.domain.usecase.DeletePasswordUseCase
 import com.d4m0n1.managerone.domain.usecase.GetPasswordByIdUseCase
 import com.d4m0n1.managerone.domain.usecase.UpdatePasswordUseCase
+import com.d4m0n1.managerone.ui.viewmodel.PasswordDetailViewModel
 import com.d4m0n1.managerone.ui.viewmodel.AddPasswordViewModel
 import com.d4m0n1.managerone.ui.viewmodel.PasswordListViewModel
 import io.ktor.client.HttpClient
@@ -22,6 +23,7 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -74,4 +76,13 @@ val appModule = module {
     // ViewModels
     viewModelOf(::PasswordListViewModel)
     viewModelOf(::AddPasswordViewModel)
+    viewModel { (passwordId: Long) ->
+        PasswordDetailViewModel(
+            passwordId = passwordId,
+            getByIdUseCase = get(),
+            updateUseCase = get(),
+            deleteUseCase = get(),
+            checkPwnedUseCase = get()
+        )
+    }
 }

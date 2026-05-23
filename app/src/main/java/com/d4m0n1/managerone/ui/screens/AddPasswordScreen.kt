@@ -16,7 +16,6 @@ import androidx.navigation.NavHostController
 import com.d4m0n1.managerone.R
 import com.d4m0n1.managerone.domain.model.Password
 import com.d4m0n1.managerone.domain.model.PwnedResult
-import com.d4m0n1.managerone.domain.repository.PasswordRepository
 import com.d4m0n1.managerone.ui.viewmodel.AddPasswordViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -28,7 +27,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun AddPasswordScreen(
     navController: NavHostController,
-    repository: PasswordRepository = koinInject(),
     viewModel: AddPasswordViewModel = koinViewModel()
 ) {
     var serviceName by remember { mutableStateOf("") }
@@ -38,6 +36,9 @@ fun AddPasswordScreen(
     var serviceError by remember { mutableStateOf(false) }
     var loginError by remember { mutableStateOf(false) }
     var passwordError by remember { mutableStateOf(false) }
+
+    // Стоит перенести отсюда PwnedResoult и isChecking во вью модель
+    // На экране редактирования та же история
 
     var pwnedResult by remember { mutableStateOf<PwnedResult?>(null) }
     var isChecking by remember { mutableStateOf(false) }
@@ -59,10 +60,10 @@ fun AddPasswordScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxSize() // сначала размер
+                .padding(padding) // потом системные отступы от баров
+                .padding(16.dp), // потом дизайнерские отступы
+            verticalArrangement = Arrangement.spacedBy(16.dp) //Между всеми элементами внутри Column
         ) {
             OutlinedTextField(
                 value = serviceName,
@@ -115,7 +116,7 @@ fun AddPasswordScreen(
                         null -> {}
                     }
                 },
-                isError = pwnedResult is PwnedResult.Pwned || pwnedResult is PwnedResult.Error,
+                isError = passwordError || pwnedResult is PwnedResult.Pwned || pwnedResult is PwnedResult.Error,
                 modifier = Modifier.fillMaxWidth()
             )
 

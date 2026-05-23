@@ -15,53 +15,31 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.d4m0n1.managerone.domain.model.Password
-import com.d4m0n1.managerone.domain.usecase.DeletePasswordUseCase
-import com.d4m0n1.managerone.domain.usecase.GetPasswordByIdUseCase
-import com.d4m0n1.managerone.domain.usecase.UpdatePasswordUseCase
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
-
 import com.d4m0n1.managerone.domain.model.PwnedResult
-import com.d4m0n1.managerone.domain.usecase.CheckPasswordPwnedUseCase
+import com.d4m0n1.managerone.ui.viewmodel.PasswordDetailViewModel
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordDetailScreen(
     navController: NavHostController,
     passwordId: Long,
-    getById: GetPasswordByIdUseCase = koinInject(),
-    updateUseCase: UpdatePasswordUseCase = koinInject(),
-    deleteUseCase: DeletePasswordUseCase = koinInject(),
-    checkPwnedUseCase: CheckPasswordPwnedUseCase = koinInject()
+    viewModel: PasswordDetailViewModel = koinViewModel { parametersOf(passwordId) }
 ) {
-    val scope = rememberCoroutineScope()
-    var password by remember { mutableStateOf<Password?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
-    var showPassword by remember { mutableStateOf(false) }
-    var isEditing by remember { mutableStateOf(false) }
+    val password by viewModel.password.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
 
-    var serviceName by remember { mutableStateOf("") }
-    var login by remember { mutableStateOf("") }
-    var passValue by remember { mutableStateOf("") }
+    val serviceName by viewModel.serviceName.collectAsStateWithLifecycle()
+    val login by viewModel.login.collectAsStateWithLifecycle()
+    val passValue by viewModel.passValue.collectAsStateWithLifecycle()
+    val pwnedResult by viewModel.pwnedResult.collectAsStateWithLifecycle()
+    val isChecking by viewModel.isChecking.collectAsStateWithLifecycle()
 
-    // Новые состояния для проверки пароля
-    var pwnedResult by remember { mutableStateOf<PwnedResult?>(null) }
-    var isChecking by remember { mutableStateOf(false) }
-
-    LaunchedEffect(passwordId) {
-        getById(passwordId).collectLatest { p ->
-            password = p
-            if (p != null) {
-                serviceName = p.serviceName
-                login = p.login
-                passValue = p.password
-            }
-            isLoading = false
-        }
-    }
+    var showPassword by remember { mutableStateOf(false) } // чисто UI-состояние
 
     val clipboard = LocalClipboardManager.current
 
@@ -90,7 +68,7 @@ fun PasswordDetailScreen(
                 },
                 actions = {
                     if (!isEditing) {
-                        IconButton(onClick = { isEditing = true }) {
+                        IconButton(onClick = { viewModel.onEditClick() }) {
                             Icon(Icons.Default.Edit, "Редактировать")
                         }
                     }
@@ -107,7 +85,7 @@ fun PasswordDetailScreen(
         ) {
             OutlinedTextField(
                 value = serviceName,
-                onValueChange = { if (isEditing) serviceName = it },
+                onValueChange = { viewModel.onServiceNameChange(it) },
                 label = { Text("Сервис") },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
@@ -115,21 +93,15 @@ fun PasswordDetailScreen(
 
             OutlinedTextField(
                 value = login,
-                onValueChange = { if (isEditing) login = it },
+                onValueChange = { viewModel.onLoginChange(it) },
                 label = { Text("Логин") },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Поле пароля с проверкой надёжности
             OutlinedTextField(
                 value = passValue,
-                onValueChange = {
-                    if (isEditing) {
-                        passValue = it
-                        pwnedResult = null  // сбрасываем результат при изменении
-                    }
-                },
+                onValueChange = { viewModel.onPasswordChange(it) },
                 label = { Text("Пароль") },
                 visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -146,17 +118,14 @@ fun PasswordDetailScreen(
                             "Пароль выглядит безопасным",
                             color = MaterialTheme.colorScheme.primary
                         )
-
                         is PwnedResult.Pwned -> Text(
                             "Пароль утёк ${(pwnedResult as PwnedResult.Pwned).count} раз!",
                             color = MaterialTheme.colorScheme.error
                         )
-
                         is PwnedResult.Error -> Text(
                             (pwnedResult as PwnedResult.Error).message,
                             color = MaterialTheme.colorScheme.error
                         )
-
                         null -> {}
                     }
                 },
@@ -166,16 +135,9 @@ fun PasswordDetailScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Кнопка проверки — показываем только в режиме редактирования
             if (isEditing) {
                 Button(
-                    onClick = {
-                        scope.launch {
-                            isChecking = true
-                            pwnedResult = checkPwnedUseCase(passValue)
-                            isChecking = false
-                        }
-                    },
+                    onClick = { viewModel.checkPasswordStrength() },
                     enabled = !isChecking && passValue.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -193,28 +155,12 @@ fun PasswordDetailScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Button(
-                        onClick = {
-                            scope.launch {
-                                updateUseCase(
-                                    password!!.copy(
-                                        serviceName = serviceName.trim(),
-                                        login = login.trim(),
-                                        password = passValue.trim(),
-                                        updatedAt = System.currentTimeMillis()
-                                    )
-                                )
-                                isEditing = false
-                                pwnedResult = null
-                            }
-                        },
+                        onClick = { viewModel.saveChanges() },
                         modifier = Modifier.weight(1f)
                     ) { Text("Сохранить") }
 
                     OutlinedButton(
-                        onClick = {
-                            isEditing = false
-                            pwnedResult = null
-                        },
+                        onClick = { viewModel.cancelEditing() },
                         modifier = Modifier.weight(1f)
                     ) { Text("Отмена") }
                 }
@@ -230,10 +176,8 @@ fun PasswordDetailScreen(
 
                     Button(
                         onClick = {
-                            scope.launch {
-                                deleteUseCase(passwordId)
-                                navController.popBackStack()
-                            }
+                            viewModel.deletePassword()
+                            navController.popBackStack()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                         modifier = Modifier.weight(1f)

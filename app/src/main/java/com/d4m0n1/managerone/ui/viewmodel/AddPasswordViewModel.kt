@@ -10,6 +10,8 @@ class AddPasswordViewModel(
     private val repository: PasswordRepository
 ) : ViewModel() {
 
+    // Стоит перенести сюда PwnedResoult и isChecking из экрана
+
     fun addPassword(password: Password) {
         viewModelScope.launch {
             repository.addPassword(password)

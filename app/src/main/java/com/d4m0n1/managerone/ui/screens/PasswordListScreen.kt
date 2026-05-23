@@ -90,7 +90,6 @@ fun PasswordListScreen(
     ) { innerPadding ->
         when {
             passwords.isEmpty() -> {
-                // состояние "пусто" — важно для UX-баллов
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

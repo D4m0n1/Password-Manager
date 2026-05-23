@@ -22,6 +22,7 @@ class SettingsDataStore(
         emit(emptyPreferences())
     }.map { it[DARK_THEME_KEY] ?: false }
 
+
     suspend fun setDarkTheme(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[DARK_THEME_KEY] = enabled

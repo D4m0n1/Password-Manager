@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 class PasswordRepositoryImpl(
     private val dao: PasswordDao
-) : PasswordRepository {
+) : PasswordRepository {    // реализует интерфейс
 
     override fun getAllPasswords(): Flow<List<Password>> = dao.getAllPasswords()
 
@@ -16,10 +16,10 @@ class PasswordRepositoryImpl(
     }
 
     override suspend fun deletePassword(id: Long) {
-        dao.deleteById(id)
+        dao.deleteById(id) // если id нет, то room ничего не сделает
     }
 
-    override fun getPasswordById(id: Long): Flow<Password?> = dao.getPasswordById(id)
+    override fun getPasswordById(id: Long): Flow<Password?> = dao.getPasswordById(id) // flow станет null, экран отреагирует
 
     override suspend fun updatePassword(password: Password) {
         dao.update(password)
